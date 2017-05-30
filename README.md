@@ -1,5 +1,5 @@
 # World Of Middle Earth (WOME) - servidor
-
+[![Build Status](https://travis-ci.org/LosPecesDelInfierno/jrpg-2017a-servidor.svg?branch=master)](https://travis-ci.org/LosPecesDelInfierno/jrpg-2017a-servidor)
 ## Sobre las personas
 
 > Para ver los participantes anteriores, referirse al archivo [humans.md](humans.md)
