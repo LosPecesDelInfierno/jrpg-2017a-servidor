@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import dominio.Item;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
@@ -204,6 +205,18 @@ public class Conector {
 			
 			stActualizarPersonaje.executeUpdate();
 			
+			//Items de la mochila
+			PreparedStatement stActualizarMochila = connect.prepareStatement("UPDATE mochila SET item1=?,item2=?,item3 = ?," +
+					"item4=?,item5=?,item6=?,item7=?,item8=?,item9=?,item10=?,item11=?,item12=?,item13=?,item14=?,item15=?," + 
+					"item16=?,item17=?,item18=?,item19=?,item20=? WHERE idMochila=?");
+			
+			for(int i = 0; i < 20; i++) {
+				stActualizarMochila.setInt(i + 1, paquetePersonaje.getIdItem(i));
+			}
+			
+			stActualizarMochila.setInt(21, paquetePersonaje.getId());
+			stActualizarMochila.executeUpdate();
+			
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con �xito."  + System.lineSeparator());;
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()  + System.lineSeparator());
@@ -298,5 +311,39 @@ public class Conector {
 		}
 		
 		return new PaqueteUsuario();
+	}
+	
+	/**
+	 * <h3>Método getRandomItem</h3>
+	 * <p>Devuelve un item elegido al azar de la base de datos que cumpla
+	 * con los requerimientos necesarios para usarlo </p>
+	 */
+	public Item getRandomItem(int fuerza, int destreza, int inteligencia) {
+		
+		ResultSet result = null;
+		PreparedStatement st;
+		
+		try {
+			st = connect.prepareStatement("SELECT * FROM item WHERE ifnull(fuerzaRequerida,0) <= ? " +
+					"and ifnull(destrezaRequerida,0) <= ? and ifnull(inteligenciaRequerida,0) <= ? " +
+					"ORDER BY random() LIMIT 1");
+		
+			st.setInt(1, fuerza);
+			st.setInt(2, destreza);
+			st.setInt(3, inteligencia);
+			result = st.executeQuery();
+
+			return new Item(result.getInt("idItem"), result.getInt("bonoAtaque"), result.getInt("bonoDefensa"),
+					result.getInt("bonoMagia"), result.getInt("bonoSalud"), result.getInt("bonoEnergia"), 
+					result.getInt("fuerzaRequerida"), result.getInt("destrezaRequerida"), result.getInt("inteligenciaRequerida"),
+					result.getString("nombre"), result.getString("foto"));
+			
+		} catch (SQLException e) {
+			Servidor.log.append("Fallo al intentar recuperar random item " + System.lineSeparator());
+			Servidor.log.append(e.getMessage() + System.lineSeparator());
+			e.printStackTrace();
+		}
+
+		return null;
 	}
 }
