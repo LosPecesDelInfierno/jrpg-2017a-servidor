@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import dominio.Item;
+import dominio.ModificadorItem;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 
@@ -233,15 +234,24 @@ public class Conector {
 			personaje.setNivel(result.getInt("nivel"));
 			
 			// Items del inventario
-			String queryInventario = "SELECT Item.* FROM Inventario INNER JOIN Item ON Inventario.IDITEM = Item.ID WHERE IDPersonaje = ?";
+			String queryInventario = "SELECT Item.*, ModificadorItem.* FROM Inventario INNER JOIN Item ON Inventario.IDITEM = Item.ID LEFT JOIN ModificadorItem ON Item.ID = ModificadorItem.IDItem WHERE IDPersonaje = ?";
 			PreparedStatement stGetInventario = connect.prepareStatement(queryInventario);
 			stGetInventario.setInt(1, idPersonaje);
 			ResultSet inventario = stGetInventario.executeQuery();
-			// TODO: Revisar por qué joraca no trae las filas (la misma query en el editor funca...)
+
+			Item itemAnterior = new Item();
 			while (inventario.next()) {
-				personaje.agregarItem(rsToItem(inventario));
+				int idItem = inventario.getInt("ID");
+				ModificadorItem modificador = rsToModificadorItem(inventario);
+				if (idItem == itemAnterior.getId()) {
+					itemAnterior.addModificador(modificador);
+				} else {
+					Item item = rsToItem(inventario);
+					item.addModificador(modificador);
+					personaje.agregarItem(item);
+					itemAnterior = item;
+				}
 			}
-			
 			return personaje;
 
 		} catch (SQLException ex) {
@@ -262,6 +272,13 @@ public class Conector {
 		int inteligenciaRequerida = resultSet.getInt("InteligenciaRequerida");
 		String foto = resultSet.getString("Foto");
 		return new Item(id, nombre, idTipoItem, fuerzaRequerida, destrezaRequerida, inteligenciaRequerida, foto);
+	}
+	
+	private ModificadorItem rsToModificadorItem(ResultSet resultSet) throws SQLException {
+		int idAtributoModificable = resultSet.getInt("IDAtributoModificable");
+		int valor  = resultSet.getInt("Valor");
+		boolean esPorcentaje = resultSet.getBoolean("EsPorcentaje");
+		return new ModificadorItem(idAtributoModificable, valor, esPorcentaje);
 	}
 	
 	public PaqueteUsuario getUsuario(String usuario) {
