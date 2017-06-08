@@ -212,7 +212,7 @@ public class EscuchaCliente extends Thread {
 					
 					break;
 					
-				case Comando.ACTUALIZARPERSONAJE:
+				case Comando.ACTUALIZARPERSONAJE: // Se recibe cuando finaliza una batalla
 					paquetePersonaje = (PaquetePersonaje) gson.fromJson(cadenaLeida, PaquetePersonaje.class);
 					Servidor.getConector().actualizarPersonaje(paquetePersonaje);
 					

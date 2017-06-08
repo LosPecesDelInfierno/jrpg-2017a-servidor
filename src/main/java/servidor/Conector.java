@@ -104,7 +104,7 @@ public class Conector {
 				stAsignarPersonaje.setString(3, paqueteUsuario.getPassword());
 				stAsignarPersonaje.execute();
 
-				// Por ultimo registro el inventario y la mochila
+				// Por último registro el inventario y la mochila
 				if (this.registrarInventarioMochila(idPersonaje)) {
 					Servidor.log.append("El usuario " + paqueteUsuario.getUsername() + " ha creado el personaje "
 							+ paquetePersonaje.getId() + System.lineSeparator());
@@ -151,25 +151,25 @@ public class Conector {
 	public boolean loguearUsuario(PaqueteUsuario user) {
 		ResultSet result = null;
 		try {
-			// Busco usuario y contrase�a
+			// Busco usuario y contraseña
 			PreparedStatement st = connect
 					.prepareStatement("SELECT * FROM registro WHERE usuario = ? AND password = ? ");
 			st.setString(1, user.getUsername());
 			st.setString(2, user.getPassword());
 			result = st.executeQuery();
 
-			// Si existe inicio sesion
+			// Si existe inicio sesión
 			if (result.next()) {
-				Servidor.log.append("El usuario " + user.getUsername() + " ha iniciado sesi�n." + System.lineSeparator());
+				Servidor.log.append("El usuario " + user.getUsername() + " ha iniciado sesión." + System.lineSeparator());
 				return true;
 			}
 
 			// Si no existe informo y devuelvo false
-			Servidor.log.append("El usuario " + user.getUsername() + " ha realizado un intento fallido de inicio de sesi�n." + System.lineSeparator());
+			Servidor.log.append("El usuario " + user.getUsername() + " ha realizado un intento fallido de inicio de sesión." + System.lineSeparator());
 			return false;
 
 		} catch (SQLException e) {
-			Servidor.log.append("El usuario " + user.getUsername() + " fallo al iniciar sesi�n." + System.lineSeparator());
+			Servidor.log.append("El usuario " + user.getUsername() + " fallo al iniciar sesión." + System.lineSeparator());
 			e.printStackTrace();
 			return false;
 		}
@@ -193,7 +193,16 @@ public class Conector {
 			
 			stActualizarPersonaje.executeUpdate();
 			
-			// TODO: Actualizar inventario
+			// TODO: Revisar (a veces llega que ganan los dos........................)
+			if (paquetePersonaje.ganoBatalla()) {
+				Item item = this.getRandomItem(paquetePersonaje.getFuerza(), paquetePersonaje.getDestreza(), paquetePersonaje.getInteligencia());
+				String queryInventario = "UPDATE Inventario SET IDItem = ? WHERE IDPersonaje = ? AND IDTipoItem = ?";			
+				PreparedStatement stActualizarInventario = connect.prepareStatement(queryInventario);
+				stActualizarInventario.setInt(1, item.getId());
+				stActualizarInventario.setInt(2, paquetePersonaje.getId());
+				stActualizarInventario.setInt(3, item.getIdTipoItem());
+				stActualizarInventario.executeUpdate();
+			}
 			
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."  + System.lineSeparator());;
 		} catch (SQLException e) {
@@ -314,21 +323,16 @@ public class Conector {
 	 * con los requerimientos necesarios para usarlo </p>
 	 */
 	public Item getRandomItem(int fuerza, int destreza, int inteligencia) {
-		
 		ResultSet result = null;
 		PreparedStatement st;
-		
 		try {
-			// TODO: Acomodar..
-			st = connect.prepareStatement("SELECT * FROM item WHERE ifnull(fuerzaRequerida,0) <= ? " +
-					"and ifnull(destrezaRequerida,0) <= ? and ifnull(inteligenciaRequerida,0) <= ? " +
-					"ORDER BY random() LIMIT 1");
-		
+			st = connect.prepareStatement("SELECT * FROM Item WHERE FuerzaRequerida <= ? " +
+					"and DestrezaRequerida <= ? and InteligenciaRequerida <= ? " +
+					"ORDER BY RANDOM() LIMIT 1");		
 			st.setInt(1, fuerza);
 			st.setInt(2, destreza);
 			st.setInt(3, inteligencia);
 			result = st.executeQuery();
-
 			return rsToItem(result);
 			
 		} catch (SQLException e) {
@@ -336,7 +340,6 @@ public class Conector {
 			Servidor.log.append(e.getMessage() + System.lineSeparator());
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 }
