@@ -130,7 +130,7 @@ public class Conector {
 			String queryInventario = "INSERT INTO Inventario (IDPersonaje, IDTipoItem) VALUES (?, 1), (?, 2), (?, 3), (?, 4), (?, 4), (?, 5), (?, 6)";
 			PreparedStatement stRegistrarInventario = connect.prepareStatement(queryInventario);
 			for (int i = 1; i <= 7; i++) {
-				stRegistrarInventario.setInt(i, idPersonaje);
+				stRegistrarInventario.setInt(idPersonaje, i);
 			}
 			stRegistrarInventario.execute();
 			
@@ -333,6 +333,8 @@ public class Conector {
 			st.setInt(2, destreza);
 			st.setInt(3, inteligencia);
 			result = st.executeQuery();
+			
+			Servidor.log.append("Asigno al personaje el item " + result.getString("nombre") + System.lineSeparator());
 			return rsToItem(result);
 			
 		} catch (SQLException e) {
