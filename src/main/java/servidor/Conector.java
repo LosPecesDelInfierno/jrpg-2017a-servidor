@@ -130,7 +130,7 @@ public class Conector {
 			String queryInventario = "INSERT INTO Inventario (IDPersonaje, IDTipoItem) VALUES (?, 1), (?, 2), (?, 3), (?, 4), (?, 4), (?, 5), (?, 6)";
 			PreparedStatement stRegistrarInventario = connect.prepareStatement(queryInventario);
 			for (int i = 1; i <= 7; i++) {
-				stRegistrarInventario.setInt(idPersonaje, i);
+				stRegistrarInventario.setInt(i, idPersonaje);
 			}
 			stRegistrarInventario.execute();
 			
