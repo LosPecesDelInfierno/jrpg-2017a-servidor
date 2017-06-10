@@ -127,9 +127,9 @@ public class Conector {
 
 	public boolean registrarInventarioMochila(int idPersonaje) {
 		try {
-			String queryInventario = "INSERT INTO Inventario (IDPersonaje, IDTipoItem) VALUES (?, 1), (?, 2), (?, 3), (?, 4), (?, 4), (?, 5), (?, 6)";
+			String queryInventario = "INSERT INTO Inventario (IDPersonaje, IDTipoItem) VALUES (?, 1), (?, 2), (?, 3), (?, 4), (?, 5), (?, 6)";
 			PreparedStatement stRegistrarInventario = connect.prepareStatement(queryInventario);
-			for (int i = 1; i <= 7; i++) {
+			for (int i = 1; i <= 6; i++) {
 				stRegistrarInventario.setInt(i, idPersonaje);
 			}
 			stRegistrarInventario.execute();
@@ -243,7 +243,7 @@ public class Conector {
 			personaje.setNivel(result.getInt("nivel"));
 			
 			// Items del inventario
-			String queryInventario = "SELECT Item.*, ModificadorItem.* FROM Inventario INNER JOIN Item ON Inventario.IDITEM = Item.ID LEFT JOIN ModificadorItem ON Item.ID = ModificadorItem.IDItem WHERE IDPersonaje = ?";
+			String queryInventario = "SELECT Item.*, ModificadorItem.* FROM Inventario INNER JOIN Item ON Inventario.IDITEM = Item.ID INNER JOIN ModificadorItem ON Item.ID = ModificadorItem.IDItem WHERE IDPersonaje = ?";
 			PreparedStatement stGetInventario = connect.prepareStatement(queryInventario);
 			stGetInventario.setInt(1, idPersonaje);
 			ResultSet inventario = stGetInventario.executeQuery();
