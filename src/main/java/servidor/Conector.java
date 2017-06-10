@@ -202,6 +202,7 @@ public class Conector {
 				stActualizarInventario.setInt(2, paquetePersonaje.getId());
 				stActualizarInventario.setInt(3, item.getIdTipoItem());
 				stActualizarInventario.executeUpdate();
+				Servidor.log.append("Asigno al personaje " + paquetePersonaje.getId() + " el item " + item.getNombre() + System.lineSeparator());
 			}
 			
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."  + System.lineSeparator());;
@@ -334,7 +335,6 @@ public class Conector {
 			st.setInt(3, inteligencia);
 			result = st.executeQuery();
 			
-			Servidor.log.append("Asigno al personaje el item " + result.getString("nombre") + System.lineSeparator());
 			return rsToItem(result);
 			
 		} catch (SQLException e) {
