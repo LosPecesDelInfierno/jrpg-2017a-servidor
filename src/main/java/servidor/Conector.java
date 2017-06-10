@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -196,13 +198,14 @@ public class Conector {
 			// TODO: Revisar (a veces llega que ganan los dos........................)
 			if (paquetePersonaje.ganoBatalla()) {
 				Item item = this.getRandomItem(paquetePersonaje.getFuerza(), paquetePersonaje.getDestreza(), paquetePersonaje.getInteligencia());
-				String queryInventario = "UPDATE Inventario SET IDItem = ? WHERE IDPersonaje = ? AND IDTipoItem = ?";			
+				String queryInventario = "UPDATE Inventario SET IDItem = ? WHERE IDPersonaje = ? AND IDTipoItem = ?";
 				PreparedStatement stActualizarInventario = connect.prepareStatement(queryInventario);
 				stActualizarInventario.setInt(1, item.getId());
 				stActualizarInventario.setInt(2, paquetePersonaje.getId());
 				stActualizarInventario.setInt(3, item.getIdTipoItem());
 				stActualizarInventario.executeUpdate();
-				Servidor.log.append("Asigno al personaje " + paquetePersonaje.getId() + " el item " + item.getNombre() + System.lineSeparator());
+				Servidor.log.append("Asigno al personaje " + paquetePersonaje.getNombre() + " el item " + item.getNombre() + System.lineSeparator());
+				paquetePersonaje.agregarItem(item);
 			}
 			
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."  + System.lineSeparator());;
@@ -249,19 +252,11 @@ public class Conector {
 			stGetInventario.setInt(1, idPersonaje);
 			ResultSet inventario = stGetInventario.executeQuery();
 
-			Item itemAnterior = new Item();
-			while (inventario.next()) {
-				int idItem = inventario.getInt("ID");
-				ModificadorItem modificador = rsToModificadorItem(inventario);
-				if (idItem == itemAnterior.getId()) {
-					itemAnterior.addModificador(modificador);
-				} else {
-					Item item = rsToItem(inventario);
-					item.addModificador(modificador);
-					personaje.agregarItem(item);
-					itemAnterior = item;
-				}
+			List<Item> items = leerItems(inventario);
+			for (Item item : items) {
+				personaje.agregarItem(item);
 			}
+			
 			return personaje;
 
 		} catch (SQLException ex) {
@@ -271,6 +266,24 @@ public class Conector {
 		}
 
 		return new PaquetePersonaje();
+	}
+	
+	private List<Item> leerItems(ResultSet resultset) throws SQLException {
+		List<Item> items = new LinkedList<Item>();
+		Item itemAnterior = new Item();
+		while (resultset.next()) {
+			int idItem = resultset.getInt("ID");
+			ModificadorItem modificador = rsToModificadorItem(resultset);
+			if (idItem == itemAnterior.getId()) {
+				itemAnterior.addModificador(modificador);
+			} else {
+				Item item = rsToItem(resultset);
+				item.addModificador(modificador);
+				items.add(item);
+				itemAnterior = item;
+			}
+		}
+		return items;
 	}
 	
 	private Item rsToItem(ResultSet resultSet) throws SQLException {
@@ -327,15 +340,14 @@ public class Conector {
 		ResultSet result = null;
 		PreparedStatement st;
 		try {
-			st = connect.prepareStatement("SELECT * FROM Item WHERE FuerzaRequerida <= ? " +
-					"and DestrezaRequerida <= ? and InteligenciaRequerida <= ? " +
-					"ORDER BY RANDOM() LIMIT 1");		
+			String query = "Select I.*, M.* From ModificadorItem M INNER JOIN (SELECT * FROM Item WHERE FuerzaRequerida <= ? and DestrezaRequerida <= ? and InteligenciaRequerida <= ? ORDER BY RANDOM() LIMIT 1) as I ON M.IDItem = I.ID";
+			st = connect.prepareStatement(query);		
 			st.setInt(1, fuerza);
 			st.setInt(2, destreza);
 			st.setInt(3, inteligencia);
 			result = st.executeQuery();
 			
-			return rsToItem(result);
+			return leerItems(result).get(0);
 			
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar recuperar random item " + System.lineSeparator());
