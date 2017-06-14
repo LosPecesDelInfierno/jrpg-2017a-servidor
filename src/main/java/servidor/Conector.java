@@ -49,10 +49,9 @@ public class Conector {
 
 			if (!result.next()) {
 
-				PreparedStatement st = connect.prepareStatement("INSERT INTO registro (usuario, password, idPersonaje) VALUES (?,?,?)");
+				PreparedStatement st = connect.prepareStatement("INSERT INTO registro (usuario, password) VALUES (?,?)");
 				st.setString(1, user.getUsername());
 				st.setString(2, user.getPassword());
-				st.setInt(3, user.getIdPj());
 				st.execute();
 				Servidor.log.append("El usuario " + user.getUsername() + " se ha registrado." + System.lineSeparator());
 				return true;
@@ -68,25 +67,26 @@ public class Conector {
 
 	}
 
-	public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje, PaqueteUsuario paqueteUsuario) {
+	public boolean registrarPersonaje(PaquetePersonaje paquetePersonaje) {
 
 		try {
 
 			// Registro al personaje en la base de datos
 			PreparedStatement stRegistrarPersonaje = connect.prepareStatement(
-					"INSERT INTO personaje (casta,raza,fuerza,destreza,inteligencia,saludTope,energiaTope,nombre,experiencia,nivel,idAlianza) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+					"INSERT INTO personaje (idUsuario, casta,raza,fuerza,destreza,inteligencia,saludTope,energiaTope,nombre,experiencia,nivel,idAlianza) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?)",
 					PreparedStatement.RETURN_GENERATED_KEYS);
-			stRegistrarPersonaje.setString(1, paquetePersonaje.getCasta());
-			stRegistrarPersonaje.setString(2, paquetePersonaje.getRaza());
-			stRegistrarPersonaje.setInt(3, paquetePersonaje.getFuerza());
-			stRegistrarPersonaje.setInt(4, paquetePersonaje.getDestreza());
-			stRegistrarPersonaje.setInt(5, paquetePersonaje.getInteligencia());
-			stRegistrarPersonaje.setInt(6, paquetePersonaje.getSaludTope());
-			stRegistrarPersonaje.setInt(7, paquetePersonaje.getEnergiaTope());
-			stRegistrarPersonaje.setString(8, paquetePersonaje.getNombre());
-			stRegistrarPersonaje.setInt(9, 0);
-			stRegistrarPersonaje.setInt(10, 1);
-			stRegistrarPersonaje.setInt(11, -1);
+			stRegistrarPersonaje.setString(1, paquetePersonaje.getUsuario());
+			stRegistrarPersonaje.setString(2, paquetePersonaje.getCasta());
+			stRegistrarPersonaje.setString(3, paquetePersonaje.getRaza());
+			stRegistrarPersonaje.setInt(4, paquetePersonaje.getFuerza());
+			stRegistrarPersonaje.setInt(5, paquetePersonaje.getDestreza());
+			stRegistrarPersonaje.setInt(6, paquetePersonaje.getInteligencia());
+			stRegistrarPersonaje.setInt(7, paquetePersonaje.getSaludTope());
+			stRegistrarPersonaje.setInt(8, paquetePersonaje.getEnergiaTope());
+			stRegistrarPersonaje.setString(9, paquetePersonaje.getNombre());
+			stRegistrarPersonaje.setInt(10, 0);
+			stRegistrarPersonaje.setInt(11, 1);
+			stRegistrarPersonaje.setInt(12, -1);
 			stRegistrarPersonaje.execute();
 
 			// Recupero la última key generada
@@ -99,20 +99,13 @@ public class Conector {
 				// Le asigno el id al paquete personaje que voy a devolver
 				paquetePersonaje.setId(idPersonaje);
 
-				// Le asigno el personaje al usuario
-				PreparedStatement stAsignarPersonaje = connect.prepareStatement("UPDATE registro SET idPersonaje=? WHERE usuario=? AND password=?");
-				stAsignarPersonaje.setInt(1, idPersonaje);
-				stAsignarPersonaje.setString(2, paqueteUsuario.getUsername());
-				stAsignarPersonaje.setString(3, paqueteUsuario.getPassword());
-				stAsignarPersonaje.execute();
-
 				// Por último registro el inventario y la mochila
 				if (this.registrarInventarioMochila(idPersonaje)) {
-					Servidor.log.append("El usuario " + paqueteUsuario.getUsername() + " ha creado el personaje "
+					Servidor.log.append("El usuario " + paquetePersonaje.getUsuario() + " ha creado el personaje "
 							+ paquetePersonaje.getId() + System.lineSeparator());
 					return true;
 				} else {
-					Servidor.log.append("Error al registrar la mochila y el inventario del usuario " + paqueteUsuario.getUsername() + " con el personaje" + paquetePersonaje.getId() + System.lineSeparator());
+					Servidor.log.append("Error al registrar la mochila y el inventario del usuario " + paquetePersonaje.getUsuario() + " con el personaje" + paquetePersonaje.getId() + System.lineSeparator());
 					return false;
 				}
 			}
@@ -219,22 +212,15 @@ public class Conector {
 		ResultSet result = null;
 		try {
 			// Selecciono el personaje de ese usuario
-			PreparedStatement st = connect.prepareStatement("SELECT * FROM registro WHERE usuario = ?");
+			PreparedStatement st = connect.prepareStatement("SELECT * FROM personaje WHERE idUsuario = ?");
 			st.setString(1, user.getUsername());
 			result = st.executeQuery();
 
-			// Obtengo el id
-			int idPersonaje = result.getInt("idPersonaje");
-
-			// Selecciono los datos del personaje
-			PreparedStatement stSeleccionarPersonaje = connect
-					.prepareStatement("SELECT * FROM personaje WHERE idPersonaje = ?");
-			stSeleccionarPersonaje.setInt(1, idPersonaje);
-			result = stSeleccionarPersonaje.executeQuery();
-
 			// Obtengo los atributos del personaje
+			int idPersonaje = result.getInt("idPersonaje");
 			PaquetePersonaje personaje = new PaquetePersonaje();
 			personaje.setId(idPersonaje);
+			personaje.setUsuario(result.getString("idUsuario"));
 			personaje.setRaza(result.getString("raza"));
 			personaje.setCasta(result.getString("casta"));
 			personaje.setFuerza(result.getInt("fuerza"));
@@ -314,12 +300,10 @@ public class Conector {
 			result = st.executeQuery();
 
 			String password = result.getString("password");
-			int idPersonaje = result.getInt("idPersonaje");
 			
 			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
 			paqueteUsuario.setUsername(usuario);
 			paqueteUsuario.setPassword(password);
-			paqueteUsuario.setIdPj(idPersonaje);
 			
 			return paqueteUsuario;
 		} catch (SQLException e) {

@@ -6,6 +6,9 @@ import java.net.Socket;
 import com.google.gson.Gson;
 
 import cliente.*;
+import comunicacion.ComandoDesconocidoException;
+import comunicacion.Procesador;
+import comunicacion.ProcesadorFactory;
 import dominio.*;
 import estados.Estado;
 import mensajeria.Comando;
@@ -32,7 +35,6 @@ public class EscuchaCliente extends Thread {
 	private PaqueteBatalla paqueteBatalla;
 	private PaqueteAtacar paqueteAtacar;
 	private PaqueteFinalizarBatalla paqueteFinalizarBatalla;
-	
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
 
@@ -45,46 +47,23 @@ public class EscuchaCliente extends Thread {
 
 	public void run() {
 		try {
-
 			Paquete paquete;
 			Paquete paqueteSv = new Paquete(null, 0);
 			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
-
+//			this.contextoProcesador = new ContextoProcesador(gson, paqueteUsuario, paquetePersonaje);
+			
 			String cadenaLeida = (String) entrada.readObject();
-		
+			
 			while (!((paquete = gson.fromJson(cadenaLeida, Paquete.class)).getComando() == Comando.DESCONECTAR)){
-								
+				
 				switch (paquete.getComando()) {
 				
 				case Comando.REGISTRO:
-					
-					// Paquete que le voy a enviar al usuario
-					paqueteSv.setComando(Comando.REGISTRO);
-					
-					paqueteUsuario = (PaqueteUsuario) (gson.fromJson(cadenaLeida, PaqueteUsuario.class)).clone();
-
-					// Si el usuario se pudo registrar le envio un msj de exito
-					if (Servidor.getConector().registrarUsuario(paqueteUsuario)) {
-						paqueteSv.setMensaje(Paquete.msjExito);
-						salida.writeObject(gson.toJson(paqueteSv));
-					// Si el usuario no se pudo registrar le envio un msj de fracaso
-					} else {
-						paqueteSv.setMensaje(Paquete.msjFracaso);
-						salida.writeObject(gson.toJson(paqueteSv));
-					}
-					break;
-
 				case Comando.CREACIONPJ:
-					
-					// Casteo el paquete personaje
-					paquetePersonaje = (PaquetePersonaje) (gson.fromJson(cadenaLeida, PaquetePersonaje.class));
-					
-					// Guardo el personaje en ese usuario
-					Servidor.getConector().registrarPersonaje(paquetePersonaje, paqueteUsuario);
-					
-					// Le envio el id del personaje
-					salida.writeObject(gson.toJson(paquetePersonaje, paquetePersonaje.getClass()));
-					
+					// TODO: Crear los procesadores restantes y volar los switch 
+					// (quedarían solamente estas dos líneas de abajo)
+					Procesador procesador = ProcesadorFactory.crear(paquete.getComando());
+					salida.writeObject(procesador.procesar(cadenaLeida));
 					break;
 
 				case Comando.INICIOSESION:
@@ -248,7 +227,7 @@ public class EscuchaCliente extends Thread {
 
 			Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
 
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (IOException | ClassNotFoundException | ComandoDesconocidoException e) {
 			Servidor.log.append("Error de conexion: " + e.getMessage() + System.lineSeparator());
 			e.printStackTrace();
 		} 
