@@ -9,6 +9,8 @@ public class ProcesadorFactory {
 			return new ProcesadorRegistro();
 		case Comando.CREACIONPJ:
 			return new ProcesadorCreacionPJ();
+		case Comando.INICIOSESION:
+			return new ProcesadorInicioDeSesion();
 		default:
 			throw new ComandoDesconocidoException();
 		}
