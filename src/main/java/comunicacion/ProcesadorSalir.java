@@ -8,15 +8,17 @@ public class ProcesadorSalir extends Procesador {
 
 	@Override
 	public String procesar(String entrada) {
-		Paquete p = gson.fromJson(entrada, Paquete.class);
 		Paquete respuesta = new Paquete(Paquete.msjExito, Comando.SALIR);
-		// Lo elimino de los clientes conectados
-		Servidor.getClientesConectados().remove(p);
-		
-		// Indico que se desconecto
-		Servidor.log.append(p.getIp() + " se ha desconectado." + System.lineSeparator());
-		
+//		Posibilidad 2 sólo devolvería respuesta.
 		return gson.toJson(respuesta);
+		
+//		Posibilidad 1 acá abajo :)
+//		Paquete paquete = gson.fromJson(entrada, Paquete.class);
+//		// Lo elimino de los clientes conectados
+//		Servidor.getClientesConectados().remove(this);
+//		// Indico que se desconecto
+//		Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
+//		return gson.toJson(respuesta);
 	}
 
 }

@@ -11,6 +11,22 @@ public class ProcesadorFactory {
 			return new ProcesadorCreacionPJ();
 		case Comando.INICIOSESION:
 			return new ProcesadorInicioDeSesion();
+		case Comando.ACTUALIZARPERSONAJE:
+			return new ProcesadorActualizarPersonaje();
+		case Comando.ATACAR:
+			return new ProcesadorAtacar();
+		case Comando.BATALLA:
+			return new ProcesadorBatalla();
+		case Comando.CONEXION:
+			return new ProcesadorConexion();
+		case Comando.FINALIZARBATALLA:
+			return new ProcesadorFinalizarBatalla();
+		case Comando.MOSTRARMAPAS:
+			return new ProcesadorMostrarMapas();
+		case Comando.MOVIMIENTO:
+			return new ProcesadorMoviento();
+		case Comando.SALIR:
+			return new ProcesadorSalir();
 		default:
 			throw new ComandoDesconocidoException();
 		}
