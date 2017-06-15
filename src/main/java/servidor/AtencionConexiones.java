@@ -30,19 +30,11 @@ public class AtencionConexiones extends Thread {
 					// Espero a que se conecte alguien
 					wait();
 					
+					PaqueteDePersonajes pdp = (PaqueteDePersonajes) new PaqueteDePersonajes(Servidor.getPersonajesConectados()).clone();
+					pdp.setComando(Comando.CONEXION);
 					// Le reenvio la conexion a todos
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-						
-						if(conectado.getPaquetePersonaje().getEstado() != Estado.estadoOffline){
-							
-							PaqueteDePersonajes pdp = (PaqueteDePersonajes) new PaqueteDePersonajes(Servidor.getPersonajesConectados()).clone();
-							pdp.setComando(Comando.CONEXION);
-							conectado.getSalida().writeObject(gson.toJson(pdp));	
-							
-							
-						}
-						
-						
+						conectado.getSalida().writeObject(gson.toJson(pdp));
 					}
 					
 				}

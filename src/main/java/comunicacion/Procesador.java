@@ -1,10 +1,14 @@
 package comunicacion;
 import com.google.gson.Gson;
 
-import servidor.EscuchaCliente;
-
 public abstract class Procesador {
-	protected final Gson gson = new Gson();
+	protected ContextoProcesador contextoProcesador;
+	protected Gson gson;
+	
+	public Procesador(ContextoProcesador contextoProcesador, Gson gson) {
+		this.contextoProcesador = contextoProcesador;
+		this.gson = gson;
+	}
 	
 	public abstract String procesar(String entrada);
 }

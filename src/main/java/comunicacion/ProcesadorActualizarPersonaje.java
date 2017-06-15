@@ -2,22 +2,24 @@ package comunicacion;
 
 import java.io.IOException;
 
-import mensajeria.Comando;
-import mensajeria.Paquete;
+import com.google.gson.Gson;
 import mensajeria.PaquetePersonaje;
 import servidor.EscuchaCliente;
 import servidor.Servidor;
 
 public class ProcesadorActualizarPersonaje extends Procesador {
 
+	public ProcesadorActualizarPersonaje(ContextoProcesador contextoProcesador, Gson gson) {
+		super(contextoProcesador, gson);
+	}
+
 	@Override
 	public String procesar(String entrada) {
 		// Se usa al finalizarse una batalla
-		Paquete respuesta = new Paquete(Paquete.msjExito, Comando.ACTUALIZARPERSONAJE);
-		PaquetePersonaje paquetePersonaje = (PaquetePersonaje) gson.fromJson(entrada, PaquetePersonaje.class);
+		PaquetePersonaje paquetePersonaje = gson.fromJson(entrada, PaquetePersonaje.class);
+		contextoProcesador.setPaquetePersonaje(paquetePersonaje);
 		Servidor.getConector().actualizarPersonaje(paquetePersonaje);
 		
-		Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
 		Servidor.getPersonajesConectados().put(paquetePersonaje.getId(), paquetePersonaje);
 
 		for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
@@ -29,7 +31,7 @@ public class ProcesadorActualizarPersonaje extends Procesador {
 			}
 		}
 
-		return gson.toJson(respuesta);
+		return "";
 	}
 
 }

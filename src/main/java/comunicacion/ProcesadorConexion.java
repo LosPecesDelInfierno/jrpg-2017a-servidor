@@ -1,27 +1,29 @@
 package comunicacion;
 
-import mensajeria.Comando;
-import mensajeria.Paquete;
+import com.google.gson.Gson;
+
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import servidor.Servidor;
 
 public class ProcesadorConexion extends Procesador {
 
+	public ProcesadorConexion(ContextoProcesador contextoProcesador, Gson gson) {
+		super(contextoProcesador, gson);
+	}
+
 	@Override
 	public String procesar(String entrada) {
-		Paquete respuesta = new Paquete(Paquete.msjExito, Comando.CONEXION);
-		PaquetePersonaje paquetePersonaje = (PaquetePersonaje) (gson.fromJson(entrada, PaquetePersonaje.class)).clone();
-
+		PaquetePersonaje paquetePersonaje = gson.fromJson(entrada, PaquetePersonaje.class);
+		contextoProcesador.setPaquetePersonaje(paquetePersonaje);
+		
 		Servidor.getPersonajesConectados().put(paquetePersonaje.getId(), (PaquetePersonaje) paquetePersonaje.clone());
 		Servidor.getUbicacionPersonajes().put(paquetePersonaje.getId(), (PaqueteMovimiento) new PaqueteMovimiento(paquetePersonaje.getId()).clone());
 		
 		synchronized(Servidor.atencionConexiones){
 			Servidor.atencionConexiones.notify();
 		}
-		
-		return gson.toJson(respuesta);
-
+		return "";
 	}
 
 }

@@ -1,16 +1,19 @@
 package comunicacion;
 
-import mensajeria.Comando;
-import mensajeria.Paquete;
+import com.google.gson.Gson;
+
 import mensajeria.PaqueteMovimiento;
 import servidor.Servidor;
 
 public class ProcesadorMoviento extends Procesador {
 
+	public ProcesadorMoviento(ContextoProcesador contextoProcesador, Gson gson) {
+		super(contextoProcesador, gson);
+	}
+
 	@Override
 	public String procesar(String entrada) {
-		Paquete respuesta = new Paquete(Paquete.msjExito, Comando.MOVIMIENTO);
-		PaqueteMovimiento paqueteMovimiento = (PaqueteMovimiento) (gson.fromJson((String) entrada, PaqueteMovimiento.class));
+		PaqueteMovimiento paqueteMovimiento = gson.fromJson(entrada, PaqueteMovimiento.class);
 		
 		Servidor.getUbicacionPersonajes().get(paqueteMovimiento.getIdPersonaje()).setPosX(paqueteMovimiento.getPosX());
 		Servidor.getUbicacionPersonajes().get(paqueteMovimiento.getIdPersonaje()).setPosY(paqueteMovimiento.getPosY());
@@ -21,7 +24,7 @@ public class ProcesadorMoviento extends Procesador {
 			Servidor.atencionMovimientos.notify();
 		}
 		
-		return gson.toJson(respuesta);
+		return "";
 	}
 
 }

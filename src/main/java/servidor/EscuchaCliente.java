@@ -2,55 +2,35 @@ package servidor;
 
 import java.io.*;
 import java.net.Socket;
-
 import com.google.gson.Gson;
-
-import cliente.*;
 import comunicacion.ComandoDesconocidoException;
+import comunicacion.ContextoProcesador;
 import comunicacion.Procesador;
 import comunicacion.ProcesadorFactory;
-import dominio.*;
-import estados.Estado;
 import mensajeria.Comando;
 import mensajeria.Paquete;
-import mensajeria.PaqueteAtacar;
-import mensajeria.PaqueteBatalla;
-import mensajeria.PaqueteDeMovimientos;
 import mensajeria.PaqueteDePersonajes;
-import mensajeria.PaqueteFinalizarBatalla;
-import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
-import mensajeria.PaqueteUsuario;
 
 public class EscuchaCliente extends Thread {
 
 	private final Socket socket;
 	private final ObjectInputStream entrada;
 	private final ObjectOutputStream salida;
-	private int idPersonaje;
 	private final Gson gson = new Gson();
 	
-	private PaquetePersonaje paquetePersonaje;
-	private PaqueteMovimiento paqueteMovimiento;
-	private PaqueteBatalla paqueteBatalla;
-	private PaqueteAtacar paqueteAtacar;
-	private PaqueteFinalizarBatalla paqueteFinalizarBatalla;
-	private PaqueteDeMovimientos paqueteDeMovimiento;
-	private PaqueteDePersonajes paqueteDePersonajes;
+	private ContextoProcesador contextoProcesador;
 
 	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida) {
 		this.socket = socket;
 		this.entrada = entrada;
 		this.salida = salida;
-		paquetePersonaje = new PaquetePersonaje();
 	}
 
 	public void run() {
 		try {
 			Paquete paquete;
-			Paquete paqueteSv = new Paquete(null, 0);
-			PaqueteUsuario paqueteUsuario = new PaqueteUsuario();
-//			this.contextoProcesador = new ContextoProcesador(gson, paqueteUsuario, paquetePersonaje);
+			this.contextoProcesador = new ContextoProcesador();
 			
 			String cadenaLeida = (String) entrada.readObject();
 			
@@ -72,8 +52,11 @@ public class EscuchaCliente extends Thread {
 //						return;
 //					}
 				
-					Procesador procesador = ProcesadorFactory.crear(paquete.getComando());
-					salida.writeObject(procesador.procesar(cadenaLeida));
+					Procesador procesador = ProcesadorFactory.crear(paquete.getComando(), this.contextoProcesador, this.gson);
+					String resultado = procesador.procesar(cadenaLeida);
+					if (!resultado.isEmpty())
+						salida.writeObject(resultado);
+					
 					// Posibilidad 1 -> hago las dos tareas de server en el Proceso y luego salgo del run() de
 					// EscuchaCliente, tal como hacia el switch anteriormente..
 //					if(paquete.getComando() == Comando.SALIR) {
@@ -83,7 +66,7 @@ public class EscuchaCliente extends Thread {
 //						return;
 //					}
 					// Posibilidad 2 -> uso un break en vez de un return y dejo vacío el procesoSalir.
-					if(paquete.getComando() == Comando.SALIR) {
+					if (paquete.getComando() == Comando.SALIR) {
 						break;
 					}
 				cadenaLeida = (String) entrada.readObject();
@@ -94,8 +77,8 @@ public class EscuchaCliente extends Thread {
 			salida.close();
 			socket.close();
 
-			Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
-			Servidor.getUbicacionPersonajes().remove(paquetePersonaje.getId());
+			Servidor.getPersonajesConectados().remove(this.getPaquetePersonaje().getId());
+			Servidor.getUbicacionPersonajes().remove(this.getPaquetePersonaje().getId());
 			Servidor.getClientesConectados().remove(this);
 			
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
@@ -129,11 +112,11 @@ public class EscuchaCliente extends Thread {
 	}
 	
 	public PaquetePersonaje getPaquetePersonaje(){
-		return paquetePersonaje;
+		return this.contextoProcesador.getPaquetePersonaje();
 	}
 	
 	public int getIdPersonaje() {
-		return idPersonaje;
+		return this.contextoProcesador.getPaquetePersonaje().getId();
 	}
 }
 

@@ -1,32 +1,34 @@
 package comunicacion;
 
+import com.google.gson.Gson;
+
 import mensajeria.Comando;
 
 public class ProcesadorFactory {
-	public static Procesador crear(int comando) throws ComandoDesconocidoException {
+	public static Procesador crear(int comando, ContextoProcesador contextoProcesador, Gson gson) throws ComandoDesconocidoException {
 		switch (comando) {
 		case Comando.REGISTRO:
-			return new ProcesadorRegistro();
+			return new ProcesadorRegistro(contextoProcesador, gson);
 		case Comando.CREACIONPJ:
-			return new ProcesadorCreacionPJ();
+			return new ProcesadorCreacionPJ(contextoProcesador, gson);
 		case Comando.INICIOSESION:
-			return new ProcesadorInicioDeSesion();
+			return new ProcesadorInicioDeSesion(contextoProcesador, gson);
 		case Comando.ACTUALIZARPERSONAJE:
-			return new ProcesadorActualizarPersonaje();
+			return new ProcesadorActualizarPersonaje(contextoProcesador, gson);
 		case Comando.ATACAR:
-			return new ProcesadorAtacar();
+			return new ProcesadorAtacar(contextoProcesador, gson);
 		case Comando.BATALLA:
-			return new ProcesadorBatalla();
+			return new ProcesadorBatalla(contextoProcesador, gson);
 		case Comando.CONEXION:
-			return new ProcesadorConexion();
+			return new ProcesadorConexion(contextoProcesador, gson);
 		case Comando.FINALIZARBATALLA:
-			return new ProcesadorFinalizarBatalla();
+			return new ProcesadorFinalizarBatalla(contextoProcesador, gson);
 		case Comando.MOSTRARMAPAS:
-			return new ProcesadorMostrarMapas();
+			return new ProcesadorMostrarMapas(contextoProcesador, gson);
 		case Comando.MOVIMIENTO:
-			return new ProcesadorMoviento();
+			return new ProcesadorMoviento(contextoProcesador, gson);
 		case Comando.SALIR:
-			return new ProcesadorSalir();
+			return new ProcesadorSalir(contextoProcesador, gson);
 		default:
 			throw new ComandoDesconocidoException();
 		}
