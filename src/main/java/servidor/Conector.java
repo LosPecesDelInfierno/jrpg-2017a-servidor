@@ -177,11 +177,11 @@ public class Conector {
 					.prepareStatement("UPDATE personaje SET fuerza=?, destreza=?, inteligencia=?, saludTope=?, energiaTope=?, experiencia=?, nivel=? "
 							+ "  WHERE idPersonaje=?");
 			
-			stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerza());
-			stActualizarPersonaje.setInt(2, paquetePersonaje.getDestreza());
-			stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligencia());
-			stActualizarPersonaje.setInt(4, paquetePersonaje.getSaludTope());
-			stActualizarPersonaje.setInt(5, paquetePersonaje.getEnergiaTope());
+			stActualizarPersonaje.setInt(1, paquetePersonaje.getFuerzaBase());
+			stActualizarPersonaje.setInt(2, paquetePersonaje.getDestrezaBase());
+			stActualizarPersonaje.setInt(3, paquetePersonaje.getInteligenciaBase());
+			stActualizarPersonaje.setInt(4, paquetePersonaje.getSaludBase());
+			stActualizarPersonaje.setInt(5, paquetePersonaje.getEnergiaBase());
 			stActualizarPersonaje.setInt(6, paquetePersonaje.getExperiencia());
 			stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
 			stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
