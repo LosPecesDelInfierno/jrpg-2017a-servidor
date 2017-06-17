@@ -107,12 +107,12 @@ public class Servidor extends Thread {
 			public void windowClosing(WindowEvent evt) {
 				try {
 					detener();
+					System.exit(0);
 				} catch (Exception e) {
 					log.append("Fallo al intentar detener el servidor." + System.lineSeparator());
 					e.printStackTrace();
 					System.exit(1);
 				}
-				System.exit(0);
 			}
 		});
 

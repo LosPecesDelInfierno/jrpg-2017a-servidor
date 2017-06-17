@@ -27,6 +27,8 @@ public class ProcesadorFactory {
 			return new ProcesadorMostrarMapas(contextoProcesador, gson);
 		case Comando.MOVIMIENTO:
 			return new ProcesadorMoviento(contextoProcesador, gson);
+		case Comando.MENSAJE: 
+			return new ProcesadorMensaje(contextoProcesador, gson);
 		case Comando.SALIR:
 			return new ProcesadorSalir(contextoProcesador, gson);
 		default:
