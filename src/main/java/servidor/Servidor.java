@@ -43,8 +43,8 @@ public class Servidor extends Thread {
 
 	public static JTextArea log;
 	
-	public static AtencionConexiones atencionConexiones = new AtencionConexiones();
-	public static AtencionMovimientos atencionMovimientos = new AtencionMovimientos();;
+	public static AtencionConexiones atencionConexiones;
+	public static AtencionMovimientos atencionMovimientos;
 
 	public static void main(String[] args) {
 		cargarInterfaz();	
@@ -90,19 +90,11 @@ public class Servidor extends Thread {
 		botonDetener.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					server.stop();
-					for (EscuchaCliente cliente : clientesConectados) {
-						cliente.getSalida().close();
-						cliente.getEntrada().close();
-						cliente.getSocket().close();
-					}
-					serverSocket.close();
-				} catch (IOException e1) {
+					detener();
+				} catch (Exception e1) {
 					log.append("Fallo al intentar detener el servidor." + System.lineSeparator());
 					e1.printStackTrace();
 				}
-				if(conexionDB != null)
-					conexionDB.close();
 				botonDetener.setEnabled(false);
 				botonIniciar.setEnabled(true);
 			}
@@ -113,28 +105,37 @@ public class Servidor extends Thread {
 		ventana.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		ventana.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent evt) {
-				if (serverSocket != null) {
-					try {
-						server.stop();
-						for (EscuchaCliente cliente : clientesConectados) {
-							cliente.getSalida().close();
-							cliente.getEntrada().close();
-							cliente.getSocket().close();
-						}
-						serverSocket.close();
-					} catch (IOException e) {
-						log.append("Fallo al intentar detener el servidor." + System.lineSeparator());
-						e.printStackTrace();
-						System.exit(1);
-					}
+				try {
+					detener();
+				} catch (Exception e) {
+					log.append("Fallo al intentar detener el servidor." + System.lineSeparator());
+					e.printStackTrace();
+					System.exit(1);
 				}
-				if (conexionDB != null)
-					conexionDB.close();
 				System.exit(0);
 			}
 		});
 
 		ventana.setVisible(true);
+	}
+	
+	private static void detener() throws IOException, InterruptedException {
+		server.stop();
+		for (EscuchaCliente cliente : clientesConectados) {
+			cliente.getSalida().close();
+			cliente.getEntrada().close();
+			cliente.getSocket().close();
+		}
+		if (serverSocket != null)
+			serverSocket.close();
+		if(conexionDB != null)
+			conexionDB.close();
+		while (atencionConexiones.isAlive()) {
+			atencionConexiones.stop();
+		}
+		while (atencionMovimientos.isAlive()) {
+			atencionMovimientos.stop();
+		}
 	}
 
 	public void run() {
@@ -147,7 +148,8 @@ public class Servidor extends Thread {
 			serverSocket = new ServerSocket(PUERTO);
 			log.append("Servidor esperando conexiones..." + System.lineSeparator());
 			String ipRemota;
-			
+			atencionConexiones = new AtencionConexiones();
+			atencionMovimientos = new AtencionMovimientos();
 			atencionConexiones.start();
 			atencionMovimientos.start();
 
