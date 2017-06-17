@@ -185,10 +185,8 @@ public class Conector {
 			stActualizarPersonaje.setInt(6, paquetePersonaje.getExperiencia());
 			stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
 			stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
-			
 			stActualizarPersonaje.executeUpdate();
 			
-			// TODO: Revisar (a veces llega que ganan los dos........................)
 			if (paquetePersonaje.ganoBatalla()) {
 				Item item = this.getRandomItem(paquetePersonaje.getFuerza(), paquetePersonaje.getDestreza(), paquetePersonaje.getInteligencia());
 				String queryInventario = "UPDATE Inventario SET IDItem = ? WHERE IDPersonaje = ? AND IDTipoItem = ?";
@@ -239,9 +237,7 @@ public class Conector {
 			ResultSet inventario = stGetInventario.executeQuery();
 
 			List<Item> items = leerItems(inventario);
-			for (Item item : items) {
-				personaje.agregarItem(item);
-			}
+			personaje.equipar(items);
 			
 			return personaje;
 
