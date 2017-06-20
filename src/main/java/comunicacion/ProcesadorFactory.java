@@ -3,6 +3,7 @@ package comunicacion;
 import com.google.gson.Gson;
 
 import mensajeria.Comando;
+import mensajeria.PaqueteComercio;
 
 public class ProcesadorFactory {
 	public static Procesador crear(int comando, ContextoProcesador contextoProcesador, Gson gson) throws ComandoDesconocidoException {
@@ -29,6 +30,8 @@ public class ProcesadorFactory {
 			return new ProcesadorMoviento(contextoProcesador, gson);
 		case Comando.SALIR:
 			return new ProcesadorSalir(contextoProcesador, gson);
+		case Comando.COMERCIO:
+			return new ProcesadorComercio(contextoProcesador, gson);
 		default:
 			throw new ComandoDesconocidoException();
 		}
