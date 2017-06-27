@@ -33,11 +33,10 @@ public class AtencionMovimientos extends Thread {
 					pdp.setComando(Comando.MOVIMIENTO);
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 					
-						if(conectado.getPaquetePersonaje().getEstado() == Estado.estadoJuego){
+						if(conectado.getPaquetePersonaje() != null && conectado.getPaquetePersonaje().getEstado() == Estado.estadoJuego){
 							conectado.getSalida().writeObject(gson.toJson(pdp));	
 						}
 					}
-					
 				}
 				
 			} catch (Exception e){

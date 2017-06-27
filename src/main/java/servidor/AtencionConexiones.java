@@ -34,7 +34,9 @@ public class AtencionConexiones extends Thread {
 					pdp.setComando(Comando.CONEXION);
 					// Le reenvio la conexion a todos
 					for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
-						conectado.getSalida().writeObject(gson.toJson(pdp));
+						if (conectado.getPaquetePersonaje() != null) {
+							conectado.getSalida().writeObject(gson.toJson(pdp));	
+						}
 					}
 					
 				}
