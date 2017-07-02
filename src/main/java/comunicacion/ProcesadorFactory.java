@@ -34,6 +34,8 @@ public class ProcesadorFactory {
 			return new ProcesadorSalir(contextoProcesador, gson);
 		case Comando.COMERCIO:
 			return new ProcesadorComercio(contextoProcesador, gson);
+		case Comando.INTERCAMBIAR:
+			return new ProcesadorIntercambio(contextoProcesador, gson);
 		default:
 			throw new ComandoDesconocidoException();
 		}
