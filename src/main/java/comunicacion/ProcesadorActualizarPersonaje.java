@@ -17,7 +17,7 @@ public class ProcesadorActualizarPersonaje extends Procesador {
 	public String procesar(String entrada) {
 		// Se usa al finalizarse una batalla
 		PaquetePersonaje paquetePersonaje = gson.fromJson(entrada, PaquetePersonaje.class);
-		contextoProcesador.setPaquetePersonaje(paquetePersonaje);
+//		contextoProcesador.setPaquetePersonaje(paquetePersonaje);
 		Servidor.getConector().actualizarPersonaje(paquetePersonaje);
 		
 		Servidor.getPersonajesConectados().put(paquetePersonaje.getId(), paquetePersonaje);
