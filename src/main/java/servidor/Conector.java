@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -197,6 +198,20 @@ public class Conector {
 				stActualizarInventario.executeUpdate();
 				Servidor.log.append("Asigno al personaje " + paquetePersonaje.getNombre() + " el item " + item.getNombre() + System.lineSeparator());
 				paquetePersonaje.agregarItem(item);
+			} else {
+				String queryLimpiarInventario = "UPDATE Inventario SET IDItem = null WHERE IDPersonaje = ?";
+				PreparedStatement stLimpiarInventario = connect.prepareStatement(queryLimpiarInventario);
+				stLimpiarInventario.setInt(1, paquetePersonaje.getId());
+				stLimpiarInventario.executeUpdate();
+				
+				String queryInventario = "UPDATE Inventario SET IDItem = ? WHERE IDPersonaje = ? AND IDTipoItem = ?";
+				PreparedStatement stActualizarInventario = connect.prepareStatement(queryInventario);
+				stActualizarInventario.setInt(2, paquetePersonaje.getId());
+				for (Item item : paquetePersonaje.getInventario()) {
+					stActualizarInventario.setInt(1, item.getId());
+					stActualizarInventario.setInt(3, item.getIdTipoItem());
+					stActualizarInventario.executeUpdate();
+				}
 			}
 			
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con éxito."  + System.lineSeparator());;
